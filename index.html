@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="description" content="ACTS: an action-conditioned visuo-tactile world model trained entirely on human physical interaction.">
+  <title>ACTS: Learning Visuo-Tactile World Models from Human Physical Interaction</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22%3E%3Crect width=%2216%22 height=%2216%22 rx=%224%22 fill=%22%23b5522b%22/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="static/css/style.css">
+  <script src="static/js/videos.js"></script>
+  <script src="static/js/main.js"></script>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="mark" href="#top"><span>ACTS</span></a>
+  <div class="links">
+    <a href="#method">Method</a>
+    <a href="#short">Short horizon</a>
+    <a href="#long">Long horizon</a>
+    <a href="#baselines">Baselines</a>
+    <a href="#ablations">Ablations</a>
+    <a href="#failures">Failure cases</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <h1><span class="acts">ACTS</span>: Learning Visuo-Tactile World Models from Human Physical Interaction</h1>
+    <p class="authors">Anonymous Authors</p>
+    <p class="venue">Paper under double-blind review</p>
+    <div class="buttons">
+      <span class="btn disabled" title="Released upon acceptance">Code &amp; Dataset: upon acceptance</span>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Abstract</h2>
+    <p>
+      Action-conditioned world models require diverse interaction data to learn how actions change the
+      physical world. For contact-rich manipulation, however, collecting such data with robots is costly:
+      teleoperation limits collection throughput, and a fixed robot or gripper restricts the contact
+      geometries and force-modulation behaviors that can be explored. We ask whether these dynamics can
+      instead be learned directly from human physical interaction while remaining usable for robot control.
+    </p>
+    <p>
+      We present <strong>ACTS</strong>, a visuo-tactile world model trained entirely from human interaction.
+      Human operators manipulate handheld tactile sensors while we record synchronized third-person and wrist
+      video, bilateral GelSight observations, 6-DoF sensor motion, and tactile-derived force signals. To bridge
+      human data and robot execution, we represent actions at the tactile sensing interface. ACTS jointly
+      predicts future visual and tactile observations under candidate actions, and can be used directly for
+      real-robot planning without robot-specific world-model fine-tuning.
+    </p>
+  </div>
+</section>
+
+<section class="soft" id="data">
+  <div class="wrap">
+    <h2>Human Interaction Data</h2>
+    <p class="lead">
+      Operators hold two independently movable handheld devices, each carrying a GelSight Mini, a motion-capture
+      marker assembly for 6-DoF pose tracking, and a local camera. Three fixed cameras record the workspace.
+      Operators slide, pivot, push, and pull a motherboard, a T-shaped block, and a rope, covering contact
+      formation and release, sticking, sliding, and object motion.
+    </p>
+    <figure class="fig">
+      <img src="static/images/setup.png" alt="Data collection rig, handheld tactile capture device, and the three objects." loading="lazy">
+      <figcaption>Workspace with fixed cameras (left), handheld capture device (top right), and objects (bottom).</figcaption>
+    </figure>
+  </div>
+</section>
+
+<section id="method">
+  <div class="wrap">
+    <h2>Method</h2>
+    <p class="lead">
+      Frozen encoders map the scene view, both wrist views, and both tactile streams to latents. A shared
+      Cosmos3 generator, adapted with LoRA, jointly denoises future tokens of all five streams, conditioned on
+      clean history and on two action representations for each hand: force-aware sensor actions and
+      view-aligned actions.
+    </p>
+    <figure class="fig">
+      <img src="static/images/overview.png" alt="ACTS architecture overview." loading="lazy">
+      <figcaption>Overview of ACTS.</figcaption>
+    </figure>
+    <div class="two-col" style="margin-top: 32px;">
+      <div>
+        <h3>Force-aware sensor actions</h3>
+        <p class="muted">
+          Relative sensor motion is expressed in the sensor frame, and changes in estimated normal force are
+          mapped to a displacement along the gel normal. The action therefore encodes both how the sensor
+          moves and how hard it presses, in a form a robot can execute.
+        </p>
+      </div>
+      <figure class="fig" style="margin: 0;">
+        <img src="static/images/force_action.png" alt="Force-induced offset below the observed contact position." loading="lazy">
+      </figure>
+    </div>
+  </div>
+</section>
+
+<section class="soft" id="short">
+  <div class="wrap">
+    <h2>Short-Horizon Prediction</h2>
+    <p class="lead">Given 8 observed frames and the recorded actions, ACTS predicts the next 8 frames (0.53&nbsp;s at 15&nbsp;fps) for all five streams.</p>
+    <div class="legend">
+      <span><strong>Top row:</strong> ground truth &nbsp;·&nbsp; <strong>Bottom row:</strong> ACTS prediction &nbsp;·&nbsp; Columns: scene, wrist L, wrist R, tactile L, tactile R</span>
+      <span class="speed" aria-label="Playback speed">
+        <button type="button" data-rate="0.25" aria-pressed="false">0.25×</button>
+        <button type="button" data-rate="0.5" aria-pressed="true">0.5×</button>
+        <button type="button" data-rate="1" aria-pressed="false">1×</button>
+      </span>
+    </div>
+    <div id="short-videos"></div>
+  </div>
+</section>
+
+<section id="long">
+  <div class="wrap">
+    <h2>Long-Horizon Rollouts</h2>
+    <p class="lead">ACTS rolls out autoregressively, feeding generated blocks back as context while following the full recorded action sequence.</p>
+    <div id="long-videos"></div>
+  </div>
+</section>
+
+<section class="soft" id="baselines">
+  <div class="wrap">
+    <h2>Baseline Comparison</h2>
+    <p class="lead">All methods use the same tokenizer, data splits, test windows, and seeds.</p>
+    <!-- Keep in sync with Table 2 of the paper. -->
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th rowspan="2">Task</th><th rowspan="2">Model</th><th colspan="3">Short horizon</th><th colspan="3">Long horizon</th></tr>
+          <tr><th>PSNR↑</th><th>SSIM↑</th><th>LPIPS↓</th><th>PSNR↑</th><th>SSIM↑</th><th>LPIPS↓</th></tr>
+        </thead>
+        <tbody>
+          <tr class="group-start"><td rowspan="2">Rope</td><td>VT-WM-style</td><td>28.05</td><td>0.8878</td><td>0.1118</td><td class="best">24.08</td><td class="best">0.8080</td><td>0.2729</td></tr>
+          <tr class="ours"><td>ACTS (Ours)</td><td class="best">28.48</td><td class="best">0.9016</td><td class="best">0.0503</td><td>22.99</td><td>0.7743</td><td class="best">0.1795</td></tr>
+          <tr class="group-start"><td rowspan="2">PushT</td><td>VT-WM-style</td><td>27.69</td><td>0.8916</td><td>0.1047</td><td class="best">22.97</td><td class="best">0.7952</td><td>0.2553</td></tr>
+          <tr class="ours"><td>ACTS (Ours)</td><td class="best">29.14</td><td class="best">0.9199</td><td class="best">0.0409</td><td>22.55</td><td>0.7876</td><td class="best">0.1789</td></tr>
+          <tr class="group-start"><td rowspan="2">Motherboard</td><td>VT-WM-style</td><td>27.01</td><td>0.8692</td><td>0.0837</td><td class="best">21.86</td><td class="best">0.7333</td><td>0.2843</td></tr>
+          <tr class="ours"><td>ACTS (Ours)</td><td class="best">27.56</td><td class="best">0.8763</td><td class="best">0.0492</td><td>21.08</td><td>0.7067</td><td class="best">0.1947</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div id="baseline-videos"></div>
+  </div>
+</section>
+
+<section id="ablations">
+  <div class="wrap">
+    <h2>Ablations</h2>
+    <div id="ablation-videos"></div>
+  </div>
+</section>
+
+<section class="soft" id="failures">
+  <div class="wrap">
+    <h2>Failure Cases</h2>
+    <p class="lead">Representative failures, shown in the same GT / prediction layout.</p>
+    <div id="failure-videos"></div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">Anonymous project page for double-blind review.</div>
+</footer>
+
+</body>
+</html>

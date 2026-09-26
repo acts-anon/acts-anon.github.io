@@ -36,7 +36,6 @@ window.ACTS_VIDEOS = {
       { src: "static/videos/short/motherboard_e019_11.mp4", caption: "Sample 3" },
       { src: "static/videos/short/motherboard_e019_14.mp4", caption: "Sample 4" },
       { src: "static/videos/short/motherboard_e019_15.mp4", caption: "Sample 5" },
-      { src: "static/videos/short/motherboard_e019_17.mp4", caption: "Sample 6" },
     ],
   },
 
@@ -77,9 +76,7 @@ window.ACTS_VIDEOS = {
     },
     {
       task: "Rope",
-      text: "Robot test window. First column is ground truth; the other columns are ACTS decoded with 2, 10, and 35 sampling steps.",
       methods: [
-        { name: "Rope, robot episode", src: "static/videos/baselines/step_compare_rope_t00279.mp4", aspect: "956 / 942", narrow: true },
         { name: "ACTS (Ours)", src: null, ours: true },
         { name: "VT-WM-style", src: null },
         { name: "ContactWorld", src: null },
@@ -96,6 +93,7 @@ window.ACTS_VIDEOS = {
   ],
 
   // Force-aware action vs. pose-only action on the same test window.
+// `force`: recorded normal force (N) per frame, 16 frames at 15 fps, 8 history + 8 predicted.
   ablations: [
     {
       title: "PushT, contact onset",
@@ -104,8 +102,10 @@ window.ACTS_VIDEOS = {
         { name: "ACTS (force-aware action)", src: "static/videos/ablation/pusht_e009_full_12.mp4", ours: true },
         { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_12.mp4" },
       ],
-      image: "static/images/force_pusht_onset.png",
-      imageCaption: "Recorded normal force for this window (shaded = 8 history frames).",
+      force: {
+        left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.43, 0.77, 1.17, 1.17, 1.17, 2.64],
+      },
     },
     {
       title: "Rope, contact onset",
@@ -114,15 +114,22 @@ window.ACTS_VIDEOS = {
         { name: "ACTS (force-aware action)", src: "static/videos/ablation/rope_e009_full_27.mp4", ours: true },
         { name: "Pose-only action", src: "static/videos/ablation/rope_e009_noforce_27.mp4" },
       ],
-      image: "static/images/force_rope_onset.png",
-      imageCaption: "Recorded normal force for this window (shaded = 8 history frames).",
+      force: {
+        left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.01, 0, 0, 0, 0],
+        right: [0.01, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 3.92, 3.92, 4.73, 4.73, 4.73],
+      },
     },
     {
       title: "PushT, contact release",
+      text: "The left sensor releases the block inside the predicted window.",
       methods: [
         { name: "ACTS (force-aware action)", src: "static/videos/ablation/pusht_e009_full_02.mp4", ours: true },
         { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_02.mp4" },
       ],
+      force: {
+        left: [2.82, 2.94, 2.94, 5.15, 5.15, 5.26, 5.26, 5.26, 5.15, 2.94, 1.17, 0, 0, 0, 0, 0],
+        right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+      },
     },
   ],
 

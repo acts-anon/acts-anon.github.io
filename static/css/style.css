@@ -108,6 +108,21 @@ h3 { font-size: 18px; margin: 28px 0 10px; }
 .compare { margin-bottom: 16px; }
 .compare .clip + .clip { margin-top: 14px; }
 .compare .plot { margin-top: 14px; }
+.force-chart { display: block; width: 100%; height: auto; background: #fff;
+  border: 1px solid var(--line); border-radius: var(--radius); }
+.fc-history { fill: #eef0f3; }
+.fc-grid { stroke: var(--line); }
+.fc-thresh { stroke: #9aa3ae; stroke-dasharray: 4 4; }
+.fc-tick { font-size: 12px; fill: var(--muted); }
+.fc-note { font-size: 11px; fill: #9aa3ae; text-anchor: middle; }
+.fc-left, .fc-right { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.fc-left { stroke: var(--accent-2); }
+.fc-right { stroke: var(--accent); }
+.fc-head { stroke: var(--ink); stroke-width: 1.5; }
+.key { display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; }
+.fc-left-key { background: var(--accent-2); }
+.fc-right-key { background: var(--accent); }
+.fc-thresh-key { background: repeating-linear-gradient(90deg, #9aa3ae 0 4px, transparent 4px 8px); }
 .compare + .compare { margin-top: 36px; }
 
 /* tables */

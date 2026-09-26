@@ -19,6 +19,7 @@
     <a href="#method">Method</a>
     <a href="#short">Short horizon</a>
     <a href="#long">Long horizon</a>
+    <a href="#robot">Robot</a>
     <a href="#baselines">Baselines</a>
     <a href="#ablations">Ablations</a>
     <a href="#failures">Failure cases</a>
@@ -66,10 +67,6 @@
       Operators slide, pivot, push, and pull a motherboard, a T-shaped block, and a rope, covering contact
       formation and release, sticking, sliding, and object motion.
     </p>
-    <figure class="fig">
-      <img src="static/images/setup.png" alt="Data collection rig, handheld tactile capture device, and the three objects." loading="lazy">
-      <figcaption>Workspace with fixed cameras (left), handheld capture device (top right), and objects (bottom).</figcaption>
-    </figure>
   </div>
 </section>
 
@@ -126,7 +123,18 @@
   </div>
 </section>
 
-<section class="soft" id="baselines">
+<section class="soft" id="robot">
+  <div class="wrap">
+    <h2>Zero-Shot Transfer to Robot</h2>
+    <p class="lead">
+      The model is trained only on human interaction. On held-out bimanual robot episodes, sensor actions
+      recorded at the robot's tactile sensors are fed directly to ACTS, without robot-specific fine-tuning.
+    </p>
+    <div id="robot-videos"></div>
+  </div>
+</section>
+
+<section id="baselines">
   <div class="wrap">
     <h2>Baseline Comparison</h2>
     <p class="lead">All methods use the same tokenizer, data splits, test windows, and seeds.</p>
@@ -151,14 +159,18 @@
   </div>
 </section>
 
-<section id="ablations">
+<section class="soft" id="ablations">
   <div class="wrap">
-    <h2>Ablations</h2>
+    <h2>Ablation: Force-Aware Actions</h2>
+    <p class="lead">
+      The same model conditioned on pose-only actions, without the force-induced offset along the gel normal.
+      Each pair uses the same test window and seed.
+    </p>
     <div id="ablation-videos"></div>
   </div>
 </section>
 
-<section class="soft" id="failures">
+<section id="failures">
   <div class="wrap">
     <h2>Failure Cases</h2>
     <p class="lead">Representative failures, shown in the same GT / prediction layout.</p>

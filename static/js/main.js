@@ -87,6 +87,16 @@
       block.appendChild(el("h3", null, g.task || g.title));
       if (g.text) block.appendChild(el("p", "muted", g.text));
       g.methods.forEach((m) => block.appendChild(figure(m.src, m.name, (m.ours ? "ours" : "") + (m.narrow ? " narrow" : ""), m.aspect)));
+      if (g.image) {
+        const f = el("figure", "fig plot");
+        const img = el("img");
+        img.src = g.image;
+        img.alt = g.imageCaption || "";
+        img.loading = "lazy";
+        f.appendChild(img);
+        if (g.imageCaption) f.appendChild(el("figcaption", null, g.imageCaption));
+        block.appendChild(f);
+      }
       container.appendChild(block);
     });
   }
@@ -106,6 +116,8 @@
   document.addEventListener("DOMContentLoaded", () => {
     tabs(document.getElementById("short-videos"), data.shortHorizon, slotList);
     tabs(document.getElementById("long-videos"), data.longHorizon, slotList);
+    const robot = document.getElementById("robot-videos");
+    data.robot.forEach((r) => robot.appendChild(figure(r.src, r.caption, "", r.aspect)));
     comparison(document.getElementById("baseline-videos"), data.baselines);
     comparison(document.getElementById("ablation-videos"), data.ablations);
     const fail = document.getElementById("failure-videos");

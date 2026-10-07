@@ -17,18 +17,18 @@ window.ACTS_VIDEOS = {
 
   shortHorizon: {
     pusht: [
-      { src: "static/videos/short/pusht_e013_01_short.mp4", caption: "Sample 1" },
-      { src: "static/videos/short/pusht_e013_02_short.mp4", caption: "Sample 2" },
-      { src: "static/videos/short/pusht_e013_03_short.mp4", caption: "Sample 3" },
-      { src: null, caption: "Sample 4" },
-      { src: null, caption: "Sample 5" },
+      { src: "static/videos/short/pusht_e019_01.mp4", caption: "Sample 1" },
+      { src: "static/videos/short/pusht_e019_02.mp4", caption: "Sample 2" },
+      { src: "static/videos/short/pusht_e019_03.mp4", caption: "Sample 3" },
+      { src: "static/videos/short/pusht_e019_21.mp4", caption: "Sample 4" },
+      { src: "static/videos/short/pusht_e019_25.mp4", caption: "Sample 5" },
     ],
     rope: [
-      { src: null, caption: "Sample 1" },
-      { src: null, caption: "Sample 2" },
-      { src: null, caption: "Sample 3" },
-      { src: null, caption: "Sample 4" },
-      { src: null, caption: "Sample 5" },
+      { src: "static/videos/short/rope_e019_01.mp4", caption: "Sample 1" },
+      { src: "static/videos/short/rope_e019_02.mp4", caption: "Sample 2" },
+      { src: "static/videos/short/rope_e019_05.mp4", caption: "Sample 3" },
+      { src: "static/videos/short/rope_e019_14.mp4", caption: "Sample 4" },
+      { src: "static/videos/short/rope_e019_15.mp4", caption: "Sample 5" },
     ],
     motherboard: [
       { src: "static/videos/short/motherboard_e019_02.mp4", caption: "Sample 1" },
@@ -154,6 +154,16 @@ window.ACTS_VIDEOS = {
       src: "static/videos/failure/motherboard_e019_05.mp4",
       title: "Motherboard: tactile and wrist-view errors",
       caption: "Wrong left tactile imprint and a distorted motherboard in the wrist views.",
+    },
+    {
+      src: "static/videos/failure/rope_e019_04.mp4",
+      title: "Rope: wrong contact location",
+      caption: "The predicted contact location and tactile imprint do not match the ground truth.",
+    },
+    {
+      src: "static/videos/failure/rope_e019_13.mp4",
+      title: "Rope: late contact errors",
+      caption: "The contact estimate is wrong in the last four predicted frames.",
     },
   ],
 };

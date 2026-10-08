@@ -2,11 +2,13 @@
 //
 // - Put the .mp4 under static/videos/<folder>/ and set `src` to its path.
 // - Optional `aspect: "W / H"` if a clip is not 1280x576.
-// - `src: null` renders a "coming soon" placeholder with the same layout.
 // - Keep filenames free of spaces, usernames, dates of real people, lab names.
+// - Clips are grouped by object id (pusht / rope / motherboard). An object with
+//   no clips in a section gets no button there.
 //
 // Layout of each clip: top row = ground truth, bottom row = ACTS prediction;
 // columns = scene, wrist L, wrist R, tactile L, tactile R.
+// Short clips: 8 input frames + 8 predicted frames. Long clips: 8 input + 120 predicted.
 
 window.ACTS_VIDEOS = {
   tasks: [
@@ -17,162 +19,120 @@ window.ACTS_VIDEOS = {
 
   shortHorizon: {
     pusht: [
-      { src: "static/videos/short/pusht_e019_01.mp4", caption: "Sample 1" },
-      { src: "static/videos/short/pusht_e019_02.mp4", caption: "Sample 2" },
-      { src: "static/videos/short/pusht_e019_03.mp4", caption: "Sample 3" },
-      { src: "static/videos/short/pusht_e019_21.mp4", caption: "Sample 4" },
-      { src: "static/videos/short/pusht_e019_25.mp4", caption: "Sample 5" },
+      { src: "static/videos/short/pusht_e019_01.mp4" },
+      { src: "static/videos/short/pusht_e019_02.mp4" },
+      { src: "static/videos/short/pusht_e019_03.mp4" },
+      { src: "static/videos/short/pusht_e019_21.mp4" },
+      { src: "static/videos/short/pusht_e019_25.mp4" },
     ],
     rope: [
-      { src: "static/videos/short/rope_e019_01.mp4", caption: "Sample 1" },
-      { src: "static/videos/short/rope_e019_02.mp4", caption: "Sample 2" },
-      { src: "static/videos/short/rope_e019_05.mp4", caption: "Sample 3" },
-      { src: "static/videos/short/rope_e019_14.mp4", caption: "Sample 4" },
-      { src: "static/videos/short/rope_e019_15.mp4", caption: "Sample 5" },
+      { src: "static/videos/short/rope_e019_01.mp4" },
+      { src: "static/videos/short/rope_e019_02.mp4" },
+      { src: "static/videos/short/rope_e019_05.mp4" },
+      { src: "static/videos/short/rope_e019_14.mp4" },
+      { src: "static/videos/short/rope_e019_15.mp4" },
     ],
     motherboard: [
-      { src: "static/videos/short/motherboard_e019_02.mp4", caption: "Sample 1" },
-      { src: "static/videos/short/motherboard_e019_07.mp4", caption: "Sample 2" },
-      { src: "static/videos/short/motherboard_e019_11.mp4", caption: "Sample 3" },
-      { src: "static/videos/short/motherboard_e019_14.mp4", caption: "Sample 4" },
-      { src: "static/videos/short/motherboard_e019_15.mp4", caption: "Sample 5" },
-    ],
-  },
-
-  longHorizon: {
-    pusht: [
-      { src: "static/videos/long/pusht_03_long.mp4", caption: "Rollout 1" },
-      { src: "static/videos/long/pusht_10_long.mp4", caption: "Rollout 2" },
-    ],
-    rope: [
-      { src: "static/videos/long/rope_03_long.mp4", caption: "Rollout 1" },
-      { src: "static/videos/long/rope_05_long.mp4", caption: "Rollout 2, contact release" },
-    ],
-    motherboard: [
-      { src: "static/videos/long/motherboard_custom_e010_01_long.mp4", caption: "Rollout 1, contact onset" },
-      { src: "static/videos/long/motherboard_custom_e010_02_long.mp4", caption: "Rollout 2, contact release" },
+      { src: "static/videos/short/motherboard_e019_02.mp4" },
+      { src: "static/videos/short/motherboard_e019_07.mp4" },
+      { src: "static/videos/short/motherboard_e019_11.mp4" },
+      { src: "static/videos/short/motherboard_e019_14.mp4" },
+      { src: "static/videos/short/motherboard_e019_15.mp4" },
     ],
   },
 
   // Human-trained model evaluated on robot episodes, no robot fine-tuning.
   robot: {
     pusht: [
-      { src: "static/videos/robot/pusht_robot2_01047.mp4", caption: "Sample 1, contact release" },
-      { src: "static/videos/robot/pusht_robot3_00343.mp4", caption: "Sample 2, contact release" },
-      { src: "static/videos/robot/pusht_robot2_00991.mp4", caption: "Sample 3" },
+      { src: "static/videos/robot/pusht_robot2_01047.mp4" },
+      { src: "static/videos/robot/pusht_robot3_00343.mp4" },
+      { src: "static/videos/robot/pusht_robot2_00991.mp4" },
     ],
     rope: [
-      { src: "static/videos/robot/rope_robot4_00950.mp4", caption: "Sample 1" },
-      { src: "static/videos/robot/rope_robot4_01050.mp4", caption: "Sample 2" },
-      { src: "static/videos/robot/rope_robot4_01591.mp4", caption: "Sample 3" },
+      { src: "static/videos/robot/rope_robot4_00950.mp4" },
+      { src: "static/videos/robot/rope_robot4_01050.mp4" },
+      { src: "static/videos/robot/rope_robot4_01591.mp4" },
     ],
     motherboard: [
-      { src: "static/videos/robot/motherboard_robot2_00190.mp4", caption: "Sample 1, contact release" },
-      { src: "static/videos/robot/motherboard_robot1_00695.mp4", caption: "Sample 2" },
-      { src: "static/videos/robot/motherboard_robot2_01872.mp4", caption: "Sample 3" },
+      { src: "static/videos/robot/motherboard_robot2_00190.mp4" },
+      { src: "static/videos/robot/motherboard_robot1_00695.mp4" },
+      { src: "static/videos/robot/motherboard_robot2_01872.mp4" },
     ],
   },
 
-  // Each entry is one test window shown for every method, stacked.
-  baselines: [
-    {
-      task: "PushT",
-      methods: [
-        { name: "ACTS (Ours)", src: null, ours: true },
-        { name: "VT-WM-style", src: null },
-        { name: "ContactWorld", src: null },
-      ],
-    },
-    {
-      task: "Rope",
-      methods: [
-        { name: "ACTS (Ours)", src: null, ours: true },
-        { name: "VT-WM-style", src: null },
-        { name: "ContactWorld", src: null },
-      ],
-    },
-    {
-      task: "Motherboard",
-      methods: [
-        { name: "ACTS (Ours)", src: null, ours: true },
-        { name: "VT-WM-style", src: null },
-        { name: "ContactWorld", src: null },
-      ],
-    },
-  ],
+  // Force-aware vs. pose-only actions on the same test window; the two videos play in sync.
+  // `force`: recorded normal force (N) per frame, 16 frames at 15 fps, 8 input + 8 predicted.
+  ablations: {
+    pusht: [
+      {
+        label: "Making contact",
+        methods: [
+          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/pusht_e009_full_12.mp4", ours: true },
+          { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_12.mp4" },
+        ],
+        force: {
+          left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+          right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.43, 0.77, 1.17, 1.17, 1.17, 2.64],
+        },
+      },
+      {
+        label: "Breaking contact",
+        methods: [
+          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/pusht_e009_full_02.mp4", ours: true },
+          { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_02.mp4" },
+        ],
+        force: {
+          left: [2.82, 2.94, 2.94, 5.15, 5.15, 5.26, 5.26, 5.26, 5.15, 2.94, 1.17, 0, 0, 0, 0, 0],
+          right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        },
+      },
+    ],
+    rope: [
+      {
+        label: "Making contact",
+        methods: [
+          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/rope_e009_full_27.mp4", ours: true },
+          { name: "Pose-only action", src: "static/videos/ablation/rope_e009_noforce_27.mp4" },
+        ],
+        force: {
+          left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.01, 0, 0, 0, 0],
+          right: [0.01, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 3.92, 3.92, 4.73, 4.73, 4.73],
+        },
+      },
+    ],
+  },
 
-  // Force-aware action vs. pose-only action on the same test window.
-// `force`: recorded normal force (N) per frame, 16 frames at 15 fps, 8 history + 8 predicted.
-  ablations: [
-    {
-      title: "PushT, contact onset",
-      text: "The right sensor makes contact inside the predicted window.",
-      methods: [
-        { name: "ACTS (force-aware action)", src: "static/videos/ablation/pusht_e009_full_12.mp4", ours: true },
-        { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_12.mp4" },
-      ],
-      force: {
-        left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.43, 0.77, 1.17, 1.17, 1.17, 2.64],
-      },
-    },
-    {
-      title: "Rope, contact onset",
-      text: "The right sensor presses into the rope inside the predicted window; compare the right tactile stream.",
-      methods: [
-        { name: "ACTS (force-aware action)", src: "static/videos/ablation/rope_e009_full_27.mp4", ours: true },
-        { name: "Pose-only action", src: "static/videos/ablation/rope_e009_noforce_27.mp4" },
-      ],
-      force: {
-        left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.01, 0, 0, 0, 0],
-        right: [0.01, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 3.92, 3.92, 4.73, 4.73, 4.73],
-      },
-    },
-    {
-      title: "PushT, contact release",
-      text: "The left sensor releases the block inside the predicted window.",
-      methods: [
-        { name: "ACTS (force-aware action)", src: "static/videos/ablation/pusht_e009_full_02.mp4", ours: true },
-        { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_02.mp4" },
-      ],
-      force: {
-        left: [2.82, 2.94, 2.94, 5.15, 5.15, 5.26, 5.26, 5.26, 5.15, 2.94, 1.17, 0, 0, 0, 0, 0],
-        right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-      },
-    },
-  ],
+  failures: {
+    pusht: [
+      { src: "static/videos/failure/pusht_e013_13_short.mp4" },
+      { src: "static/videos/failure/pusht_episode_010_seg02_t00208.mp4", aspect: "1326 / 530" },
+    ],
+    rope: [
+      { src: "static/videos/failure/rope_e019_04.mp4" },
+      { src: "static/videos/failure/rope_e019_13.mp4" },
+    ],
+    motherboard: [
+      { src: "static/videos/failure/motherboard_e019_01.mp4" },
+      { src: "static/videos/failure/motherboard_e019_05.mp4" },
+    ],
+  },
 
-  failures: [
-    {
-      src: "static/videos/failure/pusht_e013_13_short.mp4",
-      title: "PushT: wrong dynamics",
-      caption: "The predicted T position drifts from the ground truth and becomes inconsistent with the tactile view.",
-    },
-    {
-      src: "static/videos/failure/pusht_episode_010_seg02_t00208.mp4",
-      aspect: "1326 / 530",
-      title: "PushT: wrong dynamics and shape deformation",
-      caption: "The predicted T position mismatches the ground truth and the tactile view, and the block deforms.",
-    },
-    {
-      src: "static/videos/failure/motherboard_e019_01.mp4",
-      title: "Motherboard: wrong tactile imprint",
-      caption: "Both tactile imprints are wrong; the motherboard's complex geometry is hard to predict.",
-    },
-    {
-      src: "static/videos/failure/motherboard_e019_05.mp4",
-      title: "Motherboard: tactile and wrist-view errors",
-      caption: "Wrong left tactile imprint and a distorted motherboard in the wrist views.",
-    },
-    {
-      src: "static/videos/failure/rope_e019_04.mp4",
-      title: "Rope: wrong contact location",
-      caption: "The predicted contact location and tactile imprint do not match the ground truth.",
-    },
-    {
-      src: "static/videos/failure/rope_e019_13.mp4",
-      title: "Rope: late contact errors",
-      caption: "The contact estimate is wrong in the last four predicted frames.",
-    },
-  ],
+  longHorizon: {
+    pusht: [
+      { src: "static/videos/long/pusht_03_long.mp4" },
+      { src: "static/videos/long/pusht_10_long.mp4" },
+    ],
+    rope: [
+      { src: "static/videos/long/rope_03_long.mp4" },
+      { src: "static/videos/long/rope_05_long.mp4" },
+    ],
+    motherboard: [
+      { src: "static/videos/long/motherboard_custom_e010_01_long.mp4" },
+      { src: "static/videos/long/motherboard_custom_e010_02_long.mp4" },
+    ],
+  },
+
+  // Baseline clips (ACTS / VT-WM-style / ContactWorld on one window per object).
+  // The section is hidden in index.html until these exist.
+  baselines: {},
 };

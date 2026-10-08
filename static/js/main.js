@@ -3,8 +3,10 @@
   "use strict";
 
   const data = window.ACTS_VIDEOS;
+  const RATES = [0.25, 0.5, 1];
   let playbackRate = 0.5;
 
+  // Lazy-load and autoplay videos while they are on screen.
   const observer = new IntersectionObserver(
     (entries) => {
       for (const e of entries) {
@@ -28,68 +30,177 @@
     return n;
   }
 
-  function videoOrPlaceholder(src, aspect) {
-    if (!src) {
-      const ph = el("div", "placeholder");
-      ph.appendChild(el("span", null, "Video coming soon"));
-      return ph;
-    }
+  // A leader video is lazy-loaded and autoplays; a follower is driven by its leader (see sync).
+  function video(src, aspect, follower) {
     const v = el("video");
-    v.dataset.src = src;
     if (aspect) v.style.aspectRatio = aspect;
     v.muted = true;
     v.loop = true;
     v.playsInline = true;
-    v.controls = true;
-    v.preload = "none";
     v.addEventListener("loadedmetadata", () => { v.playbackRate = playbackRate; });
-    observer.observe(v);
+    if (follower) {
+      v.preload = "auto";
+      v.src = src;
+    } else {
+      v.controls = true;
+      v.preload = "none";
+      v.dataset.src = src;
+      observer.observe(v);
+    }
     return v;
   }
 
-  function figure(src, caption, extraCls, aspect) {
-    const f = el("figure", "clip" + (extraCls ? " " + extraCls : ""));
-    f.appendChild(videoOrPlaceholder(src, aspect));
+  function clip(src, caption, aspect, opts) {
+    const f = el("figure", "clip" + (opts && opts.ours ? " ours" : ""));
+    const v = video(src, aspect, opts && opts.follower);
+    f.appendChild(v);
     if (caption) f.appendChild(el("figcaption", null, caption));
-    return f;
+    return { node: f, video: v };
   }
 
-  function tabs(container, groups, render) {
-    const bar = el("div", "tabs");
-    bar.setAttribute("role", "tablist");
-    const body = el("div", "tab-body");
-    const buttons = data.tasks.map((t, i) => {
-      const b = el("button", "tab", t.name);
-      b.type = "button";
-      b.setAttribute("role", "tab");
-      b.addEventListener("click", () => select(i));
-      bar.appendChild(b);
-      return b;
+  // Keep followers on the leader's clock, so both clips show the same frame.
+  function sync(leader, followers) {
+    const align = () => followers.forEach((f) => {
+      if (Math.abs(f.currentTime - leader.currentTime) > 0.03) f.currentTime = leader.currentTime;
     });
-    function select(i) {
-      buttons.forEach((b, j) => b.setAttribute("aria-selected", String(i === j)));
-      body.querySelectorAll("video").forEach((v) => observer.unobserve(v));
-      body.replaceChildren(render(groups[data.tasks[i].id] || []));
-    }
-    container.append(bar, body);
-    select(0);
+    leader.addEventListener("play", () => {
+      followers.forEach((f) => f.play().catch(() => {}));
+      const loop = () => { align(); if (!leader.paused) requestAnimationFrame(loop); };
+      requestAnimationFrame(loop);
+    });
+    leader.addEventListener("pause", () => followers.forEach((f) => f.pause()));
+    leader.addEventListener("seeked", align);
   }
 
-  function slotList(items) {
-    const wrap = el("div", "clip-list");
-    items.forEach((it) => wrap.appendChild(figure(it.src, it.caption, "", it.aspect)));
+  // Calls fn(fraction) while `v` plays and whenever it seeks.
+  function follow(v, fn) {
+    const tick = () => {
+      if (v.duration) fn(v.currentTime / v.duration);
+      if (!v.paused) requestAnimationFrame(tick);
+    };
+    v.addEventListener("play", () => requestAnimationFrame(tick));
+    v.addEventListener("seeked", tick);
+  }
+
+  // Input / prediction bar under a clip. The playhead follows the video; click to seek.
+  function timeline(v, spec) {
+    const pred = spec.total - spec.input;
+    const bar = el("div", "timeline");
+    bar.title = "Click to seek";
+    const inp = el("div", "tl-seg tl-input");
+    inp.style.flex = String(spec.input);
+    const out = el("div", "tl-seg tl-pred");
+    out.style.flex = String(pred);
+    if (spec.block) {
+      out.classList.add("blocks");
+      out.style.setProperty("--blocks", String(pred / spec.block));
+    }
+    const head = el("div", "tl-head");
+    bar.append(inp, out, head);
+
+    const legend = el("div", "tl-legend");
+    const inLabel = el("span", "tl-key tl-key-input", `Input: ${spec.input} recorded frames`);
+    const outLabel = el("span", "tl-key tl-key-pred", spec.block
+      ? `Prediction: ${pred} frames, generated ${spec.block} at a time`
+      : `Prediction: ${pred} frames`);
+    legend.append(inLabel, outLabel);
+
+    follow(v, (p) => {
+      head.style.left = (p * 100).toFixed(2) + "%";
+      const inInput = p * spec.total < spec.input;
+      [inp, inLabel].forEach((n) => n.classList.toggle("active", inInput));
+      [out, outLabel].forEach((n) => n.classList.toggle("active", !inInput));
+    });
+    bar.addEventListener("click", (e) => {
+      const r = bar.getBoundingClientRect();
+      if (v.duration) v.currentTime = ((e.clientX - r.left) / r.width) * v.duration * 0.999;
+    });
+    const wrap = el("div", "tl");
+    wrap.append(bar, legend);
     return wrap;
   }
 
-  function comparison(container, groups) {
-    groups.forEach((g) => {
-      const block = el("div", "compare");
-      block.appendChild(el("h3", null, g.task || g.title));
-      if (g.text) block.appendChild(el("p", "muted", g.text));
-      g.methods.forEach((m) => block.appendChild(figure(m.src, m.name, (m.ours ? "ours" : "") + (m.narrow ? " narrow" : ""), m.aspect)));
-      if (g.force) block.appendChild(forceChart(g.force, block.querySelector("video")));
-      container.appendChild(block);
+  function speedControl() {
+    const box = el("span", "speed");
+    box.setAttribute("aria-label", "Playback speed");
+    RATES.forEach((r) => {
+      const b = el("button", null, r + "×");
+      b.type = "button";
+      b.dataset.rate = String(r);
+      b.setAttribute("aria-pressed", String(r === playbackRate));
+      b.addEventListener("click", () => {
+        playbackRate = r;
+        document.querySelectorAll(".speed button").forEach((o) =>
+          o.setAttribute("aria-pressed", String(o.dataset.rate === String(r))));
+        document.querySelectorAll("video").forEach((v) => { v.playbackRate = r; });
+      });
+      box.appendChild(b);
     });
+    return box;
+  }
+
+  function buttonRow(cls, labels, onSelect) {
+    const row = el("div", cls);
+    row.setAttribute("role", "tablist");
+    const buttons = labels.map((label, i) => {
+      const b = el("button", "tab", label);
+      b.type = "button";
+      b.setAttribute("role", "tab");
+      b.addEventListener("click", () => onSelect(i));
+      row.appendChild(b);
+      return b;
+    });
+    row.mark = (i) => buttons.forEach((b, j) => b.setAttribute("aria-selected", String(i === j)));
+    return row;
+  }
+
+  // Object buttons + clip buttons + one stage that shows the selected clip.
+  function player(container, groups, render, label) {
+    const tasks = data.tasks.filter((t) => (groups[t.id] || []).length);
+    if (!tasks.length) return;
+    const bar = el("div", "player-bar");
+    const stage = el("div", "stage");
+    let clipRow = null;
+    const objects = buttonRow("tabs objects", tasks.map((t) => t.name), selectTask);
+    bar.append(objects, speedControl());
+    container.append(bar, stage);
+
+    function show(items, i) {
+      clipRow.mark(i);
+      stage.querySelectorAll("video").forEach((v) => observer.unobserve(v));
+      stage.replaceChildren(render(items[i]));
+    }
+    function selectTask(t) {
+      objects.mark(t);
+      const items = groups[tasks[t].id];
+      const next = buttonRow("tabs clips", items.map((it, i) => label(it, i)), (i) => show(items, i));
+      if (clipRow) clipRow.replaceWith(next); else bar.after(next);
+      clipRow = next;
+      show(items, 0);
+    }
+    selectTask(0);
+  }
+
+  const clipLabel = (it, i) => String(i + 1);
+
+  function single(spec) {
+    return (it) => {
+      const c = clip(it.src, null, it.aspect);
+      const wrap = el("div");
+      wrap.append(c.node, timeline(c.video, spec));
+      return wrap;
+    };
+  }
+
+  function comparison(g) {
+    const wrap = el("div", "compare");
+    const row = el("div", "compare-videos");
+    const clips = g.methods.map((m, i) => clip(m.src, m.name, m.aspect, { ours: m.ours, follower: i > 0 }));
+    clips.forEach((c) => row.appendChild(c.node));
+    wrap.appendChild(row);
+    sync(clips[0].video, clips.slice(1).map((c) => c.video));
+    if (g.force) wrap.appendChild(forceChart(g.force, clips[0].video));
+    return wrap;
   }
 
   const SVG_NS = "http://www.w3.org/2000/svg";
@@ -103,7 +214,7 @@
 
   // Recorded normal force over the 16-frame window; the playhead follows `video`.
   function forceChart(force, video) {
-    const W = 640, H = 190, L = 44, R = 22, T = 16, B = 34;
+    const W = 900, H = 160, L = 44, R = 22, T = 16, B = 34;
     const n = force.left.length;
     const peak = Math.max(...force.left, ...force.right, 0.5);
     const yMax = Math.ceil(peak * 1.15);
@@ -114,13 +225,12 @@
       "aria-label": "Recorded normal force for the left and right sensors" });
     const split = x((n / 2) - 0.5);
     s.appendChild(svg("rect", { x: L, y: T, width: split - L, height: H - T - B, class: "fc-history" }));
-    s.appendChild(svg("text", { x: (L + split) / 2, y: T + 13, class: "fc-note" }, "history"));
-    s.appendChild(svg("text", { x: (split + W - R) / 2, y: T + 13, class: "fc-note" }, "predicted"));
+    s.appendChild(svg("text", { x: (L + split) / 2, y: T + 13, class: "fc-note" }, "input"));
+    s.appendChild(svg("text", { x: (split + W - R) / 2, y: T + 13, class: "fc-note" }, "prediction"));
     [0, yMax / 2, yMax].forEach((v) => {
       s.appendChild(svg("line", { x1: L, x2: W - R, y1: y(v), y2: y(v), class: "fc-grid" }));
       s.appendChild(svg("text", { x: L - 8, y: y(v) + 4, class: "fc-tick", "text-anchor": "end" }, String(+v.toFixed(1))));
     });
-    s.appendChild(svg("line", { x1: L, x2: W - R, y1: y(0.5), y2: y(0.5), class: "fc-thresh" }));
     [[0, "0 s"], [(n - 1) / 2, "0.5 s"], [n - 1, "1.0 s"]].forEach(([i, label]) =>
       s.appendChild(svg("text", { x: x(i), y: H - B + 18, class: "fc-tick", "text-anchor": "middle" }, label)));
     s.appendChild(svg("text", { x: 12, y: (T + H - B) / 2, class: "fc-tick", "text-anchor": "middle",
@@ -131,57 +241,31 @@
     });
     const head = svg("line", { x1: L, x2: L, y1: T, y2: H - B, class: "fc-head" });
     s.appendChild(head);
-
-    if (video) {
-      const tick = () => {
-        if (video.duration) {
-          const px = L + (video.currentTime / video.duration) * (W - L - R);
-          head.setAttribute("x1", px);
-          head.setAttribute("x2", px);
-        }
-        if (!video.paused) requestAnimationFrame(tick);
-      };
-      video.addEventListener("play", () => requestAnimationFrame(tick));
-      video.addEventListener("seeked", tick);
-    }
+    follow(video, (p) => {
+      const px = L + p * (W - L - R);
+      head.setAttribute("x1", px);
+      head.setAttribute("x2", px);
+    });
 
     const f = el("figure", "fig plot");
     f.appendChild(s);
     const cap = el("figcaption");
     cap.innerHTML = '<span class="key fc-left-key"></span>left sensor &nbsp; ' +
-      '<span class="key fc-right-key"></span>right sensor &nbsp; ' +
-      '<span class="key fc-thresh-key"></span>0.5 N contact threshold. Recorded normal force for this window; ' +
-      "the vertical line follows the ACTS video.";
+      '<span class="key fc-right-key"></span>right sensor &nbsp; Recorded normal force.';
     f.appendChild(cap);
     return f;
   }
 
-  function initSpeed() {
-    document.querySelectorAll(".speed button").forEach((b) => {
-      b.addEventListener("click", () => {
-        playbackRate = parseFloat(b.dataset.rate);
-        document.querySelectorAll(".speed button").forEach((o) =>
-          o.setAttribute("aria-pressed", String(o === b))
-        );
-        document.querySelectorAll("video").forEach((v) => { v.playbackRate = playbackRate; });
-      });
-    });
-  }
+  const SHORT = { input: 8, total: 16 };
+  const LONG = { input: 8, total: 128, block: 8 };
 
   document.addEventListener("DOMContentLoaded", () => {
-    tabs(document.getElementById("short-videos"), data.shortHorizon, slotList);
-    tabs(document.getElementById("long-videos"), data.longHorizon, slotList);
-    tabs(document.getElementById("robot-videos"), data.robot, slotList);
-    const baselines = document.getElementById("baseline-videos");
-    if (baselines) comparison(baselines, data.baselines);
-    comparison(document.getElementById("ablation-videos"), data.ablations);
-    const fail = document.getElementById("failure-videos");
-    data.failures.forEach((f) => {
-      const block = el("div", "compare");
-      block.appendChild(el("h3", null, f.title));
-      block.appendChild(figure(f.src, f.caption, "", f.aspect));
-      fail.appendChild(block);
-    });
-    initSpeed();
+    const at = (id) => document.getElementById(id);
+    player(at("short-videos"), data.shortHorizon, single(SHORT), clipLabel);
+    player(at("robot-videos"), data.robot, single(SHORT), clipLabel);
+    player(at("ablation-videos"), data.ablations, comparison, (it) => it.label);
+    player(at("failure-videos"), data.failures, single(SHORT), clipLabel);
+    player(at("long-videos"), data.longHorizon, single(LONG), clipLabel);
+    if (at("baseline-videos")) player(at("baseline-videos"), data.baselines, comparison, (it) => it.label);
   });
 })();

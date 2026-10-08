@@ -171,9 +171,9 @@
   document.addEventListener("DOMContentLoaded", () => {
     tabs(document.getElementById("short-videos"), data.shortHorizon, slotList);
     tabs(document.getElementById("long-videos"), data.longHorizon, slotList);
-    const robot = document.getElementById("robot-videos");
-    data.robot.forEach((r) => robot.appendChild(figure(r.src, r.caption, "", r.aspect)));
-    comparison(document.getElementById("baseline-videos"), data.baselines);
+    tabs(document.getElementById("robot-videos"), data.robot, slotList);
+    const baselines = document.getElementById("baseline-videos");
+    if (baselines) comparison(baselines, data.baselines);
     comparison(document.getElementById("ablation-videos"), data.ablations);
     const fail = document.getElementById("failure-videos");
     data.failures.forEach((f) => {

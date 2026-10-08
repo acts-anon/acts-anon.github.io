@@ -41,28 +41,37 @@ window.ACTS_VIDEOS = {
 
   longHorizon: {
     pusht: [
-      { src: null, caption: "Rollout 1" },
-      { src: null, caption: "Rollout 2" },
+      { src: "static/videos/long/pusht_03_long.mp4", caption: "Rollout 1" },
+      { src: "static/videos/long/pusht_10_long.mp4", caption: "Rollout 2" },
     ],
     rope: [
-      { src: null, caption: "Rollout 1" },
-      { src: null, caption: "Rollout 2" },
+      { src: "static/videos/long/rope_03_long.mp4", caption: "Rollout 1" },
+      { src: "static/videos/long/rope_05_long.mp4", caption: "Rollout 2, contact release" },
     ],
     motherboard: [
-      { src: "static/videos/long/motherboard_custom_e010_02_long.mp4", caption: "Rollout 1" },
-      { src: null, caption: "Rollout 2" },
+      { src: "static/videos/long/motherboard_custom_e010_01_long.mp4", caption: "Rollout 1, contact onset" },
+      { src: "static/videos/long/motherboard_custom_e010_02_long.mp4", caption: "Rollout 2, contact release" },
     ],
   },
 
   // Human-trained model evaluated on robot episodes, no robot fine-tuning.
-  robot: [
-    {
-      src: "static/videos/robot/pusht_robot2_t01047_release.mp4",
-      aspect: "1280 / 968",
-      caption: "PushT, contact release. Top: robot recording; bottom: ACTS prediction. " +
-        "Plots show the tactile-derived normal force and the sensor action fed to the model (shaded = history).",
-    },
-  ],
+  robot: {
+    pusht: [
+      { src: "static/videos/robot/pusht_robot2_01047.mp4", caption: "Sample 1, contact release" },
+      { src: "static/videos/robot/pusht_robot3_00343.mp4", caption: "Sample 2, contact release" },
+      { src: "static/videos/robot/pusht_robot2_00991.mp4", caption: "Sample 3" },
+    ],
+    rope: [
+      { src: "static/videos/robot/rope_robot4_00950.mp4", caption: "Sample 1" },
+      { src: "static/videos/robot/rope_robot4_01050.mp4", caption: "Sample 2" },
+      { src: "static/videos/robot/rope_robot4_01591.mp4", caption: "Sample 3" },
+    ],
+    motherboard: [
+      { src: "static/videos/robot/motherboard_robot2_00190.mp4", caption: "Sample 1, contact release" },
+      { src: "static/videos/robot/motherboard_robot1_00695.mp4", caption: "Sample 2" },
+      { src: "static/videos/robot/motherboard_robot2_01872.mp4", caption: "Sample 3" },
+    ],
+  },
 
   // Each entry is one test window shown for every method, stacked.
   baselines: [

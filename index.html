@@ -20,7 +20,6 @@
     <a href="#short">Short horizon</a>
     <a href="#long">Long horizon</a>
     <a href="#robot">Robot</a>
-    <a href="#baselines">Baselines</a>
     <a href="#ablations">Ablations</a>
     <a href="#failures">Failure cases</a>
   </div>
@@ -45,15 +44,17 @@
       physical world. For contact-rich manipulation, however, collecting such data with robots is costly:
       teleoperation limits collection throughput, and a fixed robot or gripper restricts the contact
       geometries and force-modulation behaviors that can be explored. We ask whether these dynamics can
-      instead be learned directly from human physical interaction while remaining usable for robot control.
+      instead be learned directly from human physical interaction and transferred to a robot that carries
+      the same sensors.
     </p>
     <p>
       We present <strong>ACTS</strong>, a visuo-tactile world model trained entirely from human interaction.
       Human operators manipulate handheld tactile sensors while we record synchronized third-person and wrist
       video, bilateral GelSight observations, 6-DoF sensor motion, and tactile-derived force signals. To bridge
       human data and robot execution, we represent actions at the tactile sensing interface. ACTS jointly
-      predicts future visual and tactile observations under candidate actions, and can be used directly for
-      real-robot planning without robot-specific world-model fine-tuning.
+      predicts future visual and tactile observations of both hands. Applied to robot teleoperation without
+      fine-tuning, its predicted tactile imprints appear and disappear with the recorded contact, while its
+      wrist-view predictions degrade.
     </p>
   </div>
 </section>
@@ -129,37 +130,26 @@
     <p class="lead">
       The model is trained only on human interaction. On held-out bimanual robot episodes, sensor actions
       recorded at the robot's tactile sensors are fed directly to ACTS, without robot-specific fine-tuning.
+      Robot tactile color and wrist-camera tone are normalized to the human data.
     </p>
+    <div class="legend">
+      <span><strong>Top row:</strong> robot recording &nbsp;·&nbsp; <strong>Bottom row:</strong> ACTS prediction &nbsp;·&nbsp; Columns: scene, wrist L, wrist R, tactile L, tactile R</span>
+    </div>
     <div id="robot-videos"></div>
   </div>
 </section>
 
+<!-- Baseline section hidden until baseline clips exist; restore the nav link too.
 <section id="baselines">
   <div class="wrap">
     <h2>Baseline Comparison</h2>
-    <p class="lead">All methods use the same tokenizer, data splits, test windows, and seeds.</p>
-    <!-- Keep in sync with Table 2 of the paper. -->
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr><th rowspan="2">Task</th><th rowspan="2">Model</th><th colspan="3">Short horizon</th><th colspan="3">Long horizon</th></tr>
-          <tr><th>PSNR↑</th><th>SSIM↑</th><th>LPIPS↓</th><th>PSNR↑</th><th>SSIM↑</th><th>LPIPS↓</th></tr>
-        </thead>
-        <tbody>
-          <tr class="group-start"><td rowspan="2">Rope</td><td>VT-WM-style</td><td>28.05</td><td>0.8878</td><td>0.1118</td><td class="best">24.08</td><td class="best">0.8080</td><td>0.2729</td></tr>
-          <tr class="ours"><td>ACTS (Ours)</td><td class="best">28.48</td><td class="best">0.9016</td><td class="best">0.0503</td><td>22.99</td><td>0.7743</td><td class="best">0.1795</td></tr>
-          <tr class="group-start"><td rowspan="2">PushT</td><td>VT-WM-style</td><td>27.69</td><td>0.8916</td><td>0.1047</td><td class="best">22.97</td><td class="best">0.7952</td><td>0.2553</td></tr>
-          <tr class="ours"><td>ACTS (Ours)</td><td class="best">29.14</td><td class="best">0.9199</td><td class="best">0.0409</td><td>22.55</td><td>0.7876</td><td class="best">0.1789</td></tr>
-          <tr class="group-start"><td rowspan="2">Motherboard</td><td>VT-WM-style</td><td>27.01</td><td>0.8692</td><td>0.0837</td><td class="best">21.86</td><td class="best">0.7333</td><td>0.2843</td></tr>
-          <tr class="ours"><td>ACTS (Ours)</td><td class="best">27.56</td><td class="best">0.8763</td><td class="best">0.0492</td><td>21.08</td><td>0.7067</td><td class="best">0.1947</td></tr>
-        </tbody>
-      </table>
-    </div>
+    <p class="lead">All methods are trained on the same human data splits and shown on the same test windows.</p>
     <div id="baseline-videos"></div>
   </div>
 </section>
+-->
 
-<section class="soft" id="ablations">
+<section id="ablations">
   <div class="wrap">
     <h2>Ablation: Force-Aware Actions</h2>
     <p class="lead">
@@ -170,7 +160,7 @@
   </div>
 </section>
 
-<section id="failures">
+<section class="soft" id="failures">
   <div class="wrap">
     <h2>Failure Cases</h2>
     <p class="lead">Representative failures, shown in the same GT / prediction layout.</p>

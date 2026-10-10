@@ -19,6 +19,7 @@
     <a href="#method">Method</a>
     <a href="#short">Short horizon</a>
     <a href="#robot">Robot</a>
+    <a href="#baselines">Baselines</a>
     <a href="#ablations">Ablation</a>
     <a href="#failures">Failure cases</a>
     <a href="#long">Long horizon</a>
@@ -107,17 +108,15 @@
   </div>
 </section>
 
-<!-- Baseline section hidden until baseline clips exist; restore the nav link too.
 <section id="baselines">
   <div class="wrap">
     <h2>Baseline Comparison</h2>
-    <p class="lead">ACTS, VT-WM-style, and ContactWorld, all trained on React, on the same test window.</p>
+    <p class="lead">ACTS and the VT-WM-style baseline, both trained on React, on the same test window, played in sync.</p>
     <div id="baseline-videos"></div>
   </div>
 </section>
--->
 
-<section id="ablations">
+<section class="soft" id="ablations">
   <div class="wrap">
     <h2>Ablation: Force-Aware Actions</h2>
     <p class="lead">Force-aware and pose-only sensor actions on the same test window, played in sync.</p>
@@ -125,14 +124,14 @@
   </div>
 </section>
 
-<section class="soft" id="failures">
+<section id="failures">
   <div class="wrap">
     <h2>Failure Cases</h2>
     <div id="failure-videos"></div>
   </div>
 </section>
 
-<section id="long">
+<section class="soft" id="long">
   <div class="wrap">
     <h2>Long-Horizon Rollouts</h2>
     <p class="lead">

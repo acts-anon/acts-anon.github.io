@@ -132,7 +132,55 @@ window.ACTS_VIDEOS = {
     ],
   },
 
-  // Baseline clips (ACTS / VT-WM-style / ContactWorld on one window per object).
-  // The section is hidden in index.html until these exist.
-  baselines: {},
+  // ACTS vs. the VT-WM-style baseline on the same test window; the two videos play in sync.
+  baselines: {
+    pusht: [
+      {
+        label: "Making contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/pusht_05_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/pusht_05_vtwm.mp4" },
+        ],
+      },
+      {
+        label: "Breaking contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/pusht_25_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/pusht_25_vtwm.mp4" },
+        ],
+      },
+    ],
+    rope: [
+      {
+        label: "Making contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/rope_31_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/rope_31_vtwm.mp4" },
+        ],
+      },
+      {
+        label: "Breaking contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/rope_24_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/rope_24_vtwm.mp4" },
+        ],
+      },
+    ],
+    motherboard: [
+      {
+        label: "Making contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/motherboard_05_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/motherboard_05_vtwm.mp4" },
+        ],
+      },
+      {
+        label: "Breaking contact",
+        methods: [
+          { name: "ACTS", src: "static/videos/baselines/motherboard_02_acts.mp4", ours: true },
+          { name: "VT-WM-style", src: "static/videos/baselines/motherboard_02_vtwm.mp4" },
+        ],
+      },
+    ],
+  },
 };

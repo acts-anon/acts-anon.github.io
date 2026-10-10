@@ -30,46 +30,32 @@
     return n;
   }
 
-  // A leader video is lazy-loaded and autoplays; a follower is driven by its leader (see sync).
-  function video(src, aspect, follower) {
+  // Lazy-loaded; autoplays while on screen.
+  function video(src, aspect) {
     const v = el("video");
     if (aspect) v.style.aspectRatio = aspect;
     v.muted = true;
     v.loop = true;
     v.playsInline = true;
+    v.controls = true;
+    v.preload = "none";
+    v.dataset.src = src;
     v.addEventListener("loadedmetadata", () => { v.playbackRate = playbackRate; });
-    if (follower) {
-      v.preload = "auto";
-      v.src = src;
-    } else {
-      v.controls = true;
-      v.preload = "none";
-      v.dataset.src = src;
-      observer.observe(v);
-    }
+    observer.observe(v);
     return v;
   }
 
-  function clip(src, caption, aspect, opts) {
-    const f = el("figure", "clip" + (opts && opts.ours ? " ours" : ""));
-    const v = video(src, aspect, opts && opts.follower);
+  // `caption` is text or a node.
+  function clip(src, caption, aspect) {
+    const f = el("figure", "clip");
+    const v = video(src, aspect);
     f.appendChild(v);
-    if (caption) f.appendChild(el("figcaption", null, caption));
+    if (caption) {
+      const c = el("figcaption");
+      c.append(caption);
+      f.appendChild(c);
+    }
     return { node: f, video: v };
-  }
-
-  // Keep followers on the leader's clock, so both clips show the same frame.
-  function sync(leader, followers) {
-    const align = () => followers.forEach((f) => {
-      if (Math.abs(f.currentTime - leader.currentTime) > 0.03) f.currentTime = leader.currentTime;
-    });
-    leader.addEventListener("play", () => {
-      followers.forEach((f) => f.play().catch(() => {}));
-      const loop = () => { align(); if (!leader.paused) requestAnimationFrame(loop); };
-      requestAnimationFrame(loop);
-    });
-    leader.addEventListener("pause", () => followers.forEach((f) => f.pause()));
-    leader.addEventListener("seeked", align);
   }
 
   // Calls fn(fraction) while `v` plays and whenever it seeks.
@@ -183,24 +169,32 @@
 
   const clipLabel = (it, i) => String(i + 1);
 
+  // Failure clips name their failure mode above the one-sentence caption.
+  function caption(it) {
+    if (!it.mode) return it.caption;
+    const box = el("span", "failure-note");
+    box.append(el("strong", "failure-mode", it.mode), " ", it.caption);
+    return box;
+  }
+
   function single(spec) {
     return (it) => {
-      const c = clip(it.src, null, it.aspect);
+      const c = clip(it.src, caption(it), it.aspect);
       const wrap = el("div");
       wrap.append(c.node, timeline(c.video, spec));
       return wrap;
     };
   }
 
-  function comparison(g) {
-    const wrap = el("div", "compare");
-    const row = el("div", "compare-videos");
-    const clips = g.methods.map((m, i) => clip(m.src, m.name, m.aspect, { ours: m.ours, follower: i > 0 }));
-    clips.forEach((c) => row.appendChild(c.node));
-    wrap.appendChild(row);
-    sync(clips[0].video, clips.slice(1).map((c) => c.video));
-    if (g.force) wrap.appendChild(forceChart(g.force, clips[0].video));
-    return wrap;
+  // One clip with a shared ground-truth row on top and one row per method below it.
+  function comparison(spec) {
+    return (g) => {
+      const c = clip(g.src, "Rows, top to bottom: " + ["Ground truth"].concat(g.rows).join(", ") + ".", "1280 / 864");
+      const wrap = el("div", "compare");
+      wrap.append(c.node, timeline(c.video, spec));
+      if (g.force) wrap.appendChild(forceChart(g.force, c.video));
+      return wrap;
+    };
   }
 
   const SVG_NS = "http://www.w3.org/2000/svg";
@@ -263,9 +257,9 @@
     const at = (id) => document.getElementById(id);
     player(at("short-videos"), data.shortHorizon, single(SHORT), clipLabel);
     player(at("robot-videos"), data.robot, single(SHORT), clipLabel);
-    player(at("ablation-videos"), data.ablations, comparison, (it) => it.label);
+    player(at("ablation-videos"), data.ablations, comparison(SHORT), (it) => it.label);
     player(at("failure-videos"), data.failures, single(SHORT), clipLabel);
     player(at("long-videos"), data.longHorizon, single(LONG), clipLabel);
-    if (at("baseline-videos")) player(at("baseline-videos"), data.baselines, comparison, (it) => it.label);
+    if (at("baseline-videos")) player(at("baseline-videos"), data.baselines, comparison(SHORT), (it) => it.label);
   });
 })();

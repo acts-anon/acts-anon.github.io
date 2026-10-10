@@ -6,7 +6,8 @@
 // - Clips are grouped by object id (pusht / rope / motherboard). An object with
 //   no clips in a section gets no button there.
 //
-// Layout of each clip: top row = ground truth, bottom row = ACTS prediction;
+// Layout of each clip: top row = ground truth, bottom row = ACTS prediction
+// (comparison clips: one row per method under the ground truth);
 // columns = scene, wrist L, wrist R, tactile L, tactile R.
 // Short clips: 8 input frames + 8 predicted frames. Long clips: 8 input + 120 predicted.
 
@@ -60,16 +61,14 @@ window.ACTS_VIDEOS = {
     ],
   },
 
-  // Force-aware vs. pose-only actions on the same test window; the two videos play in sync.
+  // Force-aware vs. pose-only actions on the same test window, stacked under one ground-truth row.
   // `force`: recorded normal force (N) per frame, 16 frames at 15 fps, 8 input + 8 predicted.
   ablations: {
     pusht: [
       {
         label: "Making contact",
-        methods: [
-          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/pusht_e009_full_12.mp4", ours: true },
-          { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_12.mp4" },
-        ],
+        src: "static/videos/ablation/pusht_12.mp4",
+        rows: ["Force-aware action (ACTS)", "Pose-only action"],
         force: {
           left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
           right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.43, 0.77, 1.17, 1.17, 1.17, 2.64],
@@ -77,10 +76,8 @@ window.ACTS_VIDEOS = {
       },
       {
         label: "Breaking contact",
-        methods: [
-          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/pusht_e009_full_02.mp4", ours: true },
-          { name: "Pose-only action", src: "static/videos/ablation/pusht_e009_noforce_02.mp4" },
-        ],
+        src: "static/videos/ablation/pusht_02.mp4",
+        rows: ["Force-aware action (ACTS)", "Pose-only action"],
         force: {
           left: [2.82, 2.94, 2.94, 5.15, 5.15, 5.26, 5.26, 5.26, 5.15, 2.94, 1.17, 0, 0, 0, 0, 0],
           right: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -90,10 +87,8 @@ window.ACTS_VIDEOS = {
     rope: [
       {
         label: "Making contact",
-        methods: [
-          { name: "Force-aware action (ACTS)", src: "static/videos/ablation/rope_e009_full_27.mp4", ours: true },
-          { name: "Pose-only action", src: "static/videos/ablation/rope_e009_noforce_27.mp4" },
-        ],
+        src: "static/videos/ablation/rope_27.mp4",
+        rows: ["Force-aware action (ACTS)", "Pose-only action"],
         force: {
           left: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.01, 0, 0, 0, 0],
           right: [0.01, 0.04, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 3.92, 3.92, 4.73, 4.73, 4.73],
@@ -104,16 +99,16 @@ window.ACTS_VIDEOS = {
 
   failures: {
     pusht: [
-      { src: "static/videos/failure/pusht_e013_13_short.mp4" },
-      { src: "static/videos/failure/pusht_episode_010_seg02_t00208.mp4", aspect: "1326 / 530" },
+      { src: "static/videos/failure/pusht_e013_13_short.mp4", mode: "Wrong dynamics.", caption: "The predicted T position diverges from the ground truth in the scene and tactile views." },
+      { src: "static/videos/failure/pusht_episode_010_seg02_t00208.mp4", mode: "Wrong dynamics.", caption: "The predicted T position diverges from the ground truth in the scene and tactile views, and the T deforms.", aspect: "1326 / 530" },
     ],
     rope: [
-      { src: "static/videos/failure/rope_e019_04.mp4" },
-      { src: "static/videos/failure/rope_e019_13.mp4" },
+      { src: "static/videos/failure/rope_e019_04.mp4", mode: "Wrong contact.", caption: "The predicted contact location and tactile image are wrong." },
+      { src: "static/videos/failure/rope_e019_13.mp4", mode: "Wrong contact.", caption: "Contact is predicted incorrectly in the last four frames." },
     ],
     motherboard: [
-      { src: "static/videos/failure/motherboard_e019_01.mp4" },
-      { src: "static/videos/failure/motherboard_e019_05.mp4" },
+      { src: "static/videos/failure/motherboard_e019_01.mp4", mode: "Wrong tactile imprint.", caption: "Both tactile imprints are wrong; the motherboard's complex geometry is hard to predict." },
+      { src: "static/videos/failure/motherboard_e019_05.mp4", mode: "Wrong imprint and distortion.", caption: "The left tactile imprint is wrong and the motherboard is distorted in the wrist views, owing to its complex geometry." },
     ],
   },
 
@@ -132,54 +127,42 @@ window.ACTS_VIDEOS = {
     ],
   },
 
-  // ACTS vs. the VT-WM-style baseline on the same test window; the two videos play in sync.
+  // ACTS vs. the VT-WM-style baseline on the same test window, stacked under one ground-truth row.
   baselines: {
     pusht: [
       {
         label: "Making contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/pusht_05_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/pusht_05_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/pusht_05.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
       {
         label: "Breaking contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/pusht_25_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/pusht_25_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/pusht_25.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
     ],
     rope: [
       {
         label: "Making contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/rope_31_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/rope_31_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/rope_31.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
       {
         label: "Breaking contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/rope_24_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/rope_24_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/rope_24.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
     ],
     motherboard: [
       {
         label: "Making contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/motherboard_05_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/motherboard_05_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/motherboard_05.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
       {
         label: "Breaking contact",
-        methods: [
-          { name: "ACTS", src: "static/videos/baselines/motherboard_02_acts.mp4", ours: true },
-          { name: "VT-WM-style", src: "static/videos/baselines/motherboard_02_vtwm.mp4" },
-        ],
+        src: "static/videos/baselines/motherboard_02.mp4",
+        rows: ["ACTS", "VT-WM-style"],
       },
     ],
   },
